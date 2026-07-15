@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMS Tester</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'Courier New', monospace;
+      background: #0d0d0d;
+      color: #00ff66;
+      padding: 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: #1a1a1a;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #2a2a2a;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #00ff66;
+      letter-spacing: 1px;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      background: #0d0d0d;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 16px;
+      min-width: 150px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #00ff66;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    #startBtn {
+      background: #00ff66;
+      color: #000;
+    }
+    #startBtn:hover:not(:disabled) { background: #00cc55; }
+    #startBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+    #stopBtn {
+      background: #ff3355;
+      color: #fff;
+    }
+    #stopBtn:hover:not(:disabled) { background: #cc2244; }
+    #stopBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    #stats {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 12px;
+      padding: 8px;
+      background: #111;
+      border-radius: 4px;
+      text-align: center;
+    }
+    #log {
+      background: #111;
+      padding: 12px;
+      border-radius: 6px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.6;
+      border: 1px solid #222;
+    }
+    #log div {
+      padding: 2px 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .success { color: #00ff66; }
+    .failed { color: #ff3355; }
+    .info { color: #ffaa00; }
+    .timestamp {
+      color: #555;
+      margin-right: 8px;
+    }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📱 SMS Tester</h1>
+    <div class="input-group">
+      <input type="tel" id="phone" placeholder="Enter phone number" value="6199176403">
+    </div>
+    <div class="btn-group">
+      <button id="startBtn">▶ Start</button>
+      <button id="stopBtn" disabled>■ Stop</button>
+    </div>
+    <div id="stats">● Ready</div>
+    <div id="log"></div>
+  </div>
+
+  <script>
+    const log = document.getElementById('log');
+    const stats = document.getElementById('stats');
+    const phoneInput = document.getElementById('phone');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    let running = false;
+    let eventSource = null;
+    let startTime = 0;
+
+    function addLog(msg, type = 'info') {
+      const div = document.createElement('div');
+      div.className = type;
+      const time = new Date().toLocaleTimeString();
+      div.innerHTML = `<span class="timestamp">[${time}]</span> ${msg}`;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function updateStats(success, failed, total) {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const secs = String(elapsed % 60).padStart(2, '0');
+      stats.textContent = `📊 ${success} success, ${failed} failed | ⏱ ${mins}:${secs} | ${total} sites`;
+    }
+
+    function startTest() {
+      const phone = phoneInput.value.trim();
+      if (!phone) { alert('Enter a phone number'); return; }
+      if (phone.length < 7) { alert('Enter a valid phone number'); return; }
+
+      running = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      log.innerHTML = '';
+      startTime = Date.now();
+      addLog('🚀 Starting test for ' + phone, 'info');
+      stats.textContent = '⏳ Running...';
+
+      const es = new EventSource('/stream?phone=' + encodeURIComponent(phone) + '&t=' + Date.now());
+      eventSource = es;
+
+      let success = 0;
+      let failed = 0;
+      let total = 0;
+
+      es.onmessage = function(event) {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'result') {
+            total++;
+            if (data.result.status === 'success') {
+              success++;
+              addLog('✅ ' + data.result.site + ': success', 'success');
+            } else {
+              failed++;
+              addLog('❌ ' + data.result.site + ': failed' + (data.result.error ? ' - ' + data.result.error : ''), 'failed');
+            }
+            updateStats(success, failed, total);
+          } else if (data.type === 'complete') {
+            addLog('✅ Test complete!', 'success');
+            stats.textContent = '📊 ' + data.results.success + ' success, ' + data.results.failed + ' failed | ⏱ Complete';
+            running = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            es.close();
+          } else if (data.type === 'error') {
+            addLog('⚠️ Error: ' + data.error, 'failed');
+          }
+        } catch(e) {
+          // ignore malformed data
+        }
+      };
+
+      es.onerror = function() {
+        if (running) {
+          addLog('⚠️ Connection lost - check console for details', 'failed');
+          // Don't automatically stop - might recover
+        }
+      };
+    }
+
+    function stopTest() {
+      if (!running) return;
+      fetch('/stop?phone=' + encodeURIComponent(phoneInput.value.trim()), { method: 'POST' })
+        .catch(() => {});
+      addLog('⏹ Stopped by user', 'info');
+      running = false;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
+      stats.textContent = '● Stopped';
+    }
+
+    startBtn.addEventListener('click', startTest);
+    stopBtn.addEventListener('click', stopTest);
+
+    // Handle page close
+    window.addEventListener('beforeunload', function() {
+      if (running) {
+        fetch('/stop?phone=' + encodeURIComponent(phoneInput.value.trim()), { method: 'POST' })
+          .catch(() => {});
+      }
+    });
+  </script>
+</body>
+</html>
