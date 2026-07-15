@@ -1,5 +1,5 @@
 {
-  "name": "sms-tester",
+  "name": "sms-tester2",
   "version": "1.0.0",
   "scripts": {
     "vercel-build": "npx playwright install chromium"
