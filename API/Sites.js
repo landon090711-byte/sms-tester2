@@ -1,0 +1,22 @@
+module.exports = [
+  { name: "Tinder", url: "https://tinder.com/", selectors: { phone: 'input[type="tel"]', submit: 'button[type="submit"]' } },
+  { name: "Uber", url: "https://auth.uber.com/login/", selectors: { phone: 'input[name="phone"]', submit: 'button[type="submit"]' } },
+  { name: "Lyft", url: "https://www.lyft.com/login", selectors: { phone: 'input[name="phone"]', submit: 'button[type="submit"]' } },
+  { name: "DoorDash", url: "https://www.doordash.com/login/", selectors: { phone: 'input[name="phone"]', submit: 'button[type="submit"]' } },
+  { name: "Facebook", url: "https://www.facebook.com/login/", selectors: { phone: 'input[name="email"]', submit: 'button[type="submit"]' } },
+  { name: "Instagram", url: "https://www.instagram.com/accounts/login/", selectors: { phone: 'input[name="username"]', submit: 'button[type="submit"]' } },
+  { name: "Twitter", url: "https://twitter.com/login", selectors: { phone: 'input[name="text"]', submit: 'button[type="submit"]' } },
+  { name: "Snapchat", url: "https://accounts.snapchat.com/accounts/login", selectors: { phone: 'input[name="email"]', submit: 'button[type="submit"]' } },
+  { name: "Venmo", url: "https://venmo.com/login", selectors: { phone: 'input[name="phone"]', submit: 'button[type="submit"]' } },
+  { name: "PayPal", url: "https://www.paypal.com/signin", selectors: { phone: 'input[name="email"]', submit: 'button[type="submit"]' } },
+  { name: "CashApp", url: "https://cash.app/login", selectors: { phone: 'input[name="phone"]', submit: 'button[type="submit"]' } },
+  { name: "Amazon", url: "https://www.amazon.com/ap/signin", selectors: { phone: 'input[name="email"]', submit: 'button[type="submit"]' } },
+  { name: "Google", url: "https://accounts.google.com/signin", selectors: { phone: 'input[name="identifier"]', submit: 'button[type="submit"]' } },
+  { name: "Apple", url: "https://appleid.apple.com/sign-in", selectors: { phone: 'input[name="accountName"]', submit: 'button[type="submit"]' } },
+  { name: "Discord", url: "https://discord.com/login", selectors: { phone: 'input[name="email"]', submit: 'button[type="submit"]' } },
+  { name: "Reddit", url: "https://www.reddit.com/login/", selectors: { phone: 'input[name="username"]', submit: 'button[type="submit"]' } },
+  { name: "LinkedIn", url: "https://www.linkedin.com/login", selectors: { phone: 'input[name="session_key"]', submit: 'button[type="submit"]' } },
+  { name: "Spotify", url: "https://www.spotify.com/login/", selectors: { phone: 'input[name="email"]', submit: 'button[type="submit"]' } },
+  { name: "Netflix", url: "https://www.netflix.com/login", selectors: { phone: 'input[name="email"]', submit: 'button[type="submit"]' } },
+  { name: "WhatsApp", url: "https://web.whatsapp.com/", selectors: { phone: 'input[type="tel"]', submit: 'button[type="submit"]' } }
+];
